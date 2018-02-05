@@ -12,9 +12,9 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
-
+#include <algorithm>
 #include "hash/hash_table.h"
-
+#include <mutex>
 namespace cmudb {
 
 template <typename K, typename V>
@@ -34,6 +34,51 @@ public:
   void Insert(const K &key, const V &value) override;
 
 private:
+  struct Bucket {
+    size_t local_dep;
+    std::vector<K> keys;
+    std::vector<V> vals;
+    size_t array_size;
+    std::mutex mtx;
+    Bucket(size_t sz)
+        :local_dep(1), array_size(sz)
+    {
+
+    }
+    size_t get_local_dep() {
+      return local_dep;
+    }
+    void set_local_dep(size_t dep) {
+      local_dep = dep;
+    }
+    bool is_full() {
+      return array_size == keys.size();
+    }
+  };
   // add your own member variables here
+  int get_dir_cnt() {
+    return 1 << global_dep;
+  }
+  size_t global_dep;
+  std::mutex global_dep_mtx;
+  void inc_global_dep() {
+    global_dep_mtx.lock();
+    global_dep++;
+    global_dep_mtx.unlock();
+  }
+  std::vector<Bucket*> dir;
+  int num_buckets;
+  std::mutex num_buc_mut;
+  void inc_num_buc() {
+    num_buc_mut.lock();
+    num_buckets++;
+    num_buc_mut.unlock();
+  }
+
+  const size_t array_size;
+
+
 };
+const size_t init_global_dep = 1;
+const size_t init_num_buckets = 2;
 } // namespace cmudb
