@@ -33,7 +33,7 @@ public:
   bool Remove(const K &key) override;
   void Insert(const K &key, const V &value) override;
 
-private:
+
   struct Bucket {
     size_t local_dep;
     std::vector<K> keys;
@@ -55,6 +55,7 @@ private:
       return array_size == keys.size();
     }
   };
+ private:
   // add your own member variables here
   int get_dir_cnt() {
     return 1 << global_dep;

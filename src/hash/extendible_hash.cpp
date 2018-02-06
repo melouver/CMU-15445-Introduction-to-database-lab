@@ -147,6 +147,7 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
       }
       dir[D] = newb;
       b.set_local_dep(b.get_local_dep()+1);
+      newb->set_local_dep(b.get_local_dep());
       for (size_t i = 0; i < search_size; i++) {
         if (HashKey(b.keys[i]) != ctrD) {
           newb->keys.push_back(b.keys[i]);
@@ -155,7 +156,11 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
           b.vals.erase(b.vals.begin()+i);
         }
       }
+      newb->mtx.unlock();
+      b.mtx.unlock();
+
       newb = dir[HashKey(key)];
+      newb->mtx.lock();
       newb->keys.push_back(key);
       newb->vals.push_back(value);
       newb->mtx.unlock();
@@ -182,8 +187,12 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
           val_arr.erase(val_arr.begin()+i);
         }
       }
+      newb->mtx.unlock();
+      b.mtx.unlock();
+
       D = HashKey(key);
       newb = dir[D];
+      newb->mtx.lock();
       newb->keys.push_back(key);
       newb->vals.push_back(value);
       newb->mtx.unlock();
@@ -194,8 +203,9 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
     // not full so just push back
     b.keys.push_back(key);
     b.vals.push_back(value);
+    b.mtx.unlock();
   }
-  b.mtx.unlock();
+
 }
 
 template class ExtendibleHash<page_id_t, Page *>;
