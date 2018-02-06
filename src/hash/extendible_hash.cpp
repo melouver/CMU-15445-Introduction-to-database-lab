@@ -159,11 +159,12 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
       newb->mtx.unlock();
       b.mtx.unlock();
 
-      newb = dir[HashKey(key)];
-      newb->mtx.lock();
-      newb->keys.push_back(key);
-      newb->vals.push_back(value);
-      newb->mtx.unlock();
+//      newb = dir[HashKey(key)];
+//      newb->mtx.lock();
+//      newb->keys.push_back(key);
+//      newb->vals.push_back(value);
+//      newb->mtx.unlock();
+      Insert(key, value);
     } else if (b.get_local_dep() == global_dep){
       // double dir
       size_t dir_cnt = get_dir_cnt();
@@ -190,12 +191,13 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
       newb->mtx.unlock();
       b.mtx.unlock();
 
-      D = HashKey(key);
-      newb = dir[D];
-      newb->mtx.lock();
-      newb->keys.push_back(key);
-      newb->vals.push_back(value);
-      newb->mtx.unlock();
+//      D = HashKey(key);
+//      newb = dir[D];
+//      newb->mtx.lock();
+//      newb->keys.push_back(key);
+//      newb->vals.push_back(value);
+//      newb->mtx.unlock();
+      Insert(key, value);
     } else {
       LOG_ERROR("depth error!!\n");
     }
