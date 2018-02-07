@@ -26,7 +26,7 @@ template <typename T> void LRUReplacer<T>::Insert(const T &value)
   time++;
   _rm.erase(_m[value]);
   _m[value] = time;
-  _rm[time] = value;//TODO: remove old time => T map
+  _rm[time] = value;
 }
 
 /* If LRU is non-empty, pop the head member from LRU to argument "value", and
