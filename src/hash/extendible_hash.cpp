@@ -17,12 +17,14 @@ ExtendibleHash<K, V>::ExtendibleHash(size_t size)
  num_buckets(init_num_buckets),
  array_size(size)
 {
+  pt_mtx.lock();
   size_t bucket_dir_cnt = get_dir_cnt();
   for (size_t i = 0; i < bucket_dir_cnt; i++) {
     Bucket *b = new Bucket(size);
     inc_num_buc();
     dir.push_back(b);
   }
+  pt_mtx.unlock();
 }
 
 /*
@@ -70,6 +72,7 @@ int ExtendibleHash<K, V>::GetNumBuckets() const {
  */
 template <typename K, typename V>
 bool ExtendibleHash<K, V>::Find(const K &key, V &value) {
+  pt_mtx.lock();
   Bucket &b = (*dir[HashKey(key)]);
   std::lock_guard<std::mutex> lock(b.mtx);
   const std::vector<K> &key_arr = b.keys;
@@ -78,9 +81,11 @@ bool ExtendibleHash<K, V>::Find(const K &key, V &value) {
   for (size_t i = 0; i < search_size; i++) {
     if (key_arr[i] == key) {
       value = b.vals[i];
+      pt_mtx.unlock();
       return true;
     }
   }
+  pt_mtx.unlock();
   return false;
 }
 
@@ -90,6 +95,7 @@ bool ExtendibleHash<K, V>::Find(const K &key, V &value) {
  */
 template <typename K, typename V>
 bool ExtendibleHash<K, V>::Remove(const K &key) {
+  pt_mtx.lock();
   size_t D = HashKey(key);
   Bucket &b = *(dir[D]);
   std::lock_guard<std::mutex> lock(b.mtx);
@@ -101,9 +107,11 @@ bool ExtendibleHash<K, V>::Remove(const K &key) {
     if (key_arr[i] == key) {
       key_arr.erase(key_arr.begin() + i);
       val_arr.erase(val_arr.begin() + i);
+      pt_mtx.unlock();
       return true;
     }
   }
+  pt_mtx.unlock();
   return false;
 }
 
@@ -114,6 +122,7 @@ bool ExtendibleHash<K, V>::Remove(const K &key) {
  */
 template <typename K, typename V>
 void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
+  pt_mtx.lock();
   size_t D = HashKey(key);
   Bucket &b = *(dir[D]);
   b.mtx.lock();
@@ -125,6 +134,7 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
     if (key_arr[i] == key) {
       val_arr[i] = value;
       b.mtx.unlock();
+      pt_mtx.unlock();
       return;
     }
   }
@@ -156,6 +166,7 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
       }
       newb->mtx.unlock();
       b.mtx.unlock();
+      pt_mtx.unlock();
       // recursive insert until non-full bucket
       Insert(key, value);
     } else if (b.get_local_dep() == global_dep){
@@ -183,6 +194,7 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
       }
       newb->mtx.unlock();
       b.mtx.unlock();
+      pt_mtx.unlock();
       // recursive insert until non-full bucket
       Insert(key, value);
     } else {
@@ -194,6 +206,7 @@ void ExtendibleHash<K, V>::Insert(const K &key, const V &value) {
     b.keys.push_back(key);
     b.vals.push_back(value);
     b.mtx.unlock();
+    pt_mtx.unlock();
   }
 }
 

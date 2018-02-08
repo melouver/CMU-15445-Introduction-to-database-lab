@@ -55,6 +55,7 @@ public:
       return array_size == keys.size();
     }
   };
+
  private:
   // add your own member variables here
   int get_dir_cnt() {
@@ -75,6 +76,7 @@ public:
     num_buckets++;
     num_buc_mut.unlock();
   }
+  std::mutex pt_mtx;
 
   const size_t array_size;
 
