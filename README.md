@@ -1,3 +1,11 @@
+这是CMU数据库课程的实验。
+
+# Progress:
+- [x] buffer pool manager 
+- [ ] B+ tree
+- [ ] Concurrency Control
+- [ ] Log and recovery
+
 # 15-445 Database Systems
 # SQLite Project Source Code
 
