@@ -1,5 +1,4 @@
-这是CMU数据库课程的实验。
-
+This is my answer to the labs in the CMU 15445 Introduction to Database System.
 # Progress:
 - [x] buffer pool manager 
 - [ ] B+ tree
